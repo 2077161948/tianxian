@@ -17,7 +17,7 @@ class image_service:
         return resize
 
     def image_similarity(self):
-        #计算图片相识度
+        # 计算图片相识度
         image = self.file_model.image_file_buff
         image = cv2.imread(image)
         type = self.file_model.type
@@ -35,9 +35,8 @@ class image_service:
             result.append(similarity)
         return result
 
-
     def superposition(self):
-        #图片叠加
+        # 图片叠加
         image = self.file_model.image_file_buff
         image = cv2.imread(image)
 
