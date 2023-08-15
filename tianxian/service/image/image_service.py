@@ -35,6 +35,7 @@ class image_service:
             result.append(similarity)
         return result
 
+
     def superposition(self):
         #图片叠加
         image = self.file_model.image_file_buff
