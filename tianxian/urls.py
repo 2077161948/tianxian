@@ -23,6 +23,6 @@ from web.views import *
 urlpatterns = [
     # path("admin/", admin.site.urls),
     path("index/", web.views.index),
-    path("file/upload", web.views.upload_file),
-    path("pdf/to/word", web.views.upload_file)
+    path("pdf/to/txt", web.views.pdf_to_txt),
+    path("pdf/to/word", web.views.pdf_to_word)
 ]
