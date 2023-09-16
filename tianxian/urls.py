@@ -19,7 +19,10 @@ from django.urls import path
 
 import web.views
 from web.views import *
+
 urlpatterns = [
-    #path("admin/", admin.site.urls),
-    path("index/",web.views.index)
+    # path("admin/", admin.site.urls),
+    path("index/", web.views.index),
+    path("file/upload", web.views.upload_file),
+    path("pdf/to/word", web.views.upload_file)
 ]
