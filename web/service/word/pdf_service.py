@@ -3,9 +3,12 @@ import uuid
 import zipfile
 
 import PyPDF2
+from docx import Document
+from pdfminer.pdfdocument import PDFDocument, PDFTextExtractionNotAllowed
 from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
 from pdfquery import PDFQuery
-from pdf2docx import parse
+from pdf2docx import parse, Converter
 from docx2pdf import convert
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter, PDFPageAggregator
@@ -74,9 +77,29 @@ class PdfService:
         result_file_path = []
         for item in file_list:
             data = {}
-            name = f'{uuid.uuid4()}.word'
+            name = f'{uuid.uuid4()}.docx'
             word_file = os.path.join(MEDIA_ROOT, name)
-            parse(item['path'], word_file)
+            fp = open(item['path'], 'rb')
+            parser = PDFParser(fp)
+            doc = PDFDocument(parser)
+            if not doc.is_extractable:
+                raise PDFTextExtractionNotAllowed
+            else:
+                out = Document()
+                rsrcmagr = PDFResourceManager()
+                laparams = LAParams()
+                device = PDFPageAggregator(rsrcmagr, laparams=laparams)
+                interpreter = PDFPageInterpreter(rsrcmagr, device)
+                for page in PDFPage.create_pages(doc):
+                    interpreter.process_page(page)
+                    layout = device.get_result()
+                    for x in layout:
+                        pass
+            #parse(pdf_file=item['path'],docx_file=word_file)
+            # convert pdf to docx
+            cv = Converter(item['path'])
+            cv.convert(word_file)  # 默认参数start=0, end=None
+            cv.close()
             data['path'] = word_file
             data['name'] = name
             result_file_path.append(data)
