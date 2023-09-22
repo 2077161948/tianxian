@@ -94,6 +94,7 @@ class PdfService:
                     interpreter.process_page(page)
                     layout = device.get_result()
                     for x in layout:
+                        print(x)
                         pass
             #parse(pdf_file=item['path'],docx_file=word_file)
             # convert pdf to docx
