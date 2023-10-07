@@ -16,6 +16,119 @@ class image_service:
         resize = cv2.resize(image, (length, width))
         return resize
 
+    def cropping(self, x, x1, y, y1):
+        # 图片裁剪
+        image = self.file_model.image_file_buff
+        image = cv2.imread(image)
+        return image[x:y, x1:y1]
+
+    def img_zip(self, x):
+        #图片压缩
+        image = self.file_model.image_file_buff
+        image = cv2.imread(image)
+        compression_params = [cv2.IMWRITE_JPEG_QUALITY, x]
+        compressed_image, _ = cv2.imencode('.jpg', image, compression_params)
+        return compressed_image
+
+    def adjust_exposure(self,image, gamma):
+        #曝光
+        adjusted = cv2.pow(image / 255.0, gamma)
+        return adjusted
+
+    def adjust_clarity(self,image, amount):
+        # 调整鲜明度
+        blurred = cv2.GaussianBlur(image, (0, 0), amount)
+        sharpened = cv2.addWeighted(image, 1.5, blurred, -0.5, 0)
+        return sharpened
+
+    def adjust_highlight(self,image, alpha, beta):
+        # 调整高光
+        adjusted = cv2.addWeighted(image, alpha, image, 0, beta)
+        return adjusted
+
+    def adjust_shadow(self,image, alpha, beta):
+        # 调整阴影
+        adjusted = cv2.addWeighted(image, alpha, image, 0, beta)
+        return adjusted
+
+    def adjust_contrast(self,image, alpha):
+        # 调整对比度为
+        adjusted = cv2.convertScaleAbs(image, alpha=alpha)
+        return adjusted
+
+    def adjust_brightness(self,image, beta):
+        # 调整亮度
+        adjusted = np.clip(image + beta, 0, 255).astype(np.uint8)
+        return adjusted
+
+    def adjust_black_point(self,image, threshold):
+        # 以灰度图像方式读取
+        # 调整黑点
+        _, binary = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY)
+        adjusted = cv2.bitwise_and(image, binary)
+        return adjusted
+
+    def adjust_saturation(self,image, alpha):
+        # 调整饱和度
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv_image)
+        s = cv2.addWeighted(s, alpha, s, 0, 0)
+        s = np.clip(s, 0, 255).astype(np.uint8)
+        hsv_adjusted = cv2.merge([h, s, v])
+        adjusted = cv2.cvtColor(hsv_adjusted, cv2.COLOR_HSV2BGR)
+        return adjusted
+
+    def adjust_natural_saturation(self,image, alpha):
+        # 调整自然饱和度为100
+        # 以灰度图像方式读取
+        _, max_value, _, _ = cv2.minMaxLoc(image)
+        adjusted = cv2.convertScaleAbs(image, alpha=alpha / max_value)
+        return adjusted
+
+    def adjust_white_balance(self,image, temperature):
+        # 调整色温为5000
+        kelvin_matrix = np.array([[temperature / 100, 0, 0],
+                                  [0, temperature / 100, 0],
+                                  [0, 0, temperature / 100]], dtype=np.float32)
+        adjusted = cv2.transform(image, kelvin_matrix)
+        return adjusted
+
+    def adjust_hue(self,image, hue_shift):
+        # 调整色调偏移量为20
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv_image)
+        h = cv2.add(h, hue_shift)
+        h = np.clip(h, 0, 179).astype(np.uint8)
+        hsv_adjusted = cv2.merge([h, s, v])
+        adjusted = cv2.cvtColor(hsv_adjusted, cv2.COLOR_HSV2BGR)
+        return adjusted
+
+    def adjust_sharpness(self,image, amount):
+        # 调整锐度为0.5
+        blurred = cv2.GaussianBlur(image, (0, 0), 3 * amount)
+        sharpened = cv2.addWeighted(image, 1.5, blurred, -0.5, 0)
+        return sharpened
+
+    def adjust_clarity(self,image, amount):
+        # 调整清晰度
+        blurred = cv2.GaussianBlur(image, (0, 0), amount)
+        adjusted = cv2.addWeighted(image, 1.5, blurred, -0.5, 0)
+        return adjusted
+
+    def denoise(self,image):
+        # 噪点消除
+        denoised = cv2.fastNlMeansDenoisingColored(image, None, 10, 10, 7, 21)
+        return denoised
+
+    def adjust_vignette(self,image, sigma):
+        # 调整晕影效果
+        height, width = image.shape[:2]
+        X, Y = np.meshgrid(np.linspace(-1, 1, width), np.linspace(-1, 1, height))
+        D_squared = X ** 2 + Y ** 2
+        vignette = np.exp(-D_squared / (2 * sigma ** 2))
+        adjusted = cv2.multiply(image, vignette)
+        return adjusted
+
     def image_similarity(self):
         # 计算图片相识度
         image = self.file_model.image_file_buff
